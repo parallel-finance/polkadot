@@ -1196,6 +1196,7 @@ pub fn get_authority_keys_from_seed_no_beefy(
 
 fn testnet_accounts() -> Vec<AccountId> {
 	vec![
+		"5HHMY7e8UAqR5ZaHGaQnRW5EDR8dP7QpAyjeBu6V7vdXxxbf".parse().unwrap(),
 		get_account_id_from_seed::<sr25519::Public>("Alice"),
 		get_account_id_from_seed::<sr25519::Public>("Bob"),
 		get_account_id_from_seed::<sr25519::Public>("Charlie"),
@@ -1322,7 +1323,16 @@ pub fn kusama_testnet_genesis(
 		},
 		indices: kusama::IndicesConfig { indices: vec![] },
 		balances: kusama::BalancesConfig {
-			balances: endowed_accounts.iter().map(|k| (k.clone(), ENDOWMENT)).collect(),
+			balances: endowed_accounts
+				.iter()
+				.map(|k| {
+					if k == &"5HHMY7e8UAqR5ZaHGaQnRW5EDR8dP7QpAyjeBu6V7vdXxxbf".parse().unwrap() {
+						(k.clone(), 10_000 * ENDOWMENT)
+					} else {
+						(k.clone(), ENDOWMENT)
+					}
+				})
+				.collect(),
 		},
 		session: kusama::SessionConfig {
 			keys: initial_authorities
@@ -1410,7 +1420,16 @@ pub fn westend_testnet_genesis(
 		},
 		indices: westend::IndicesConfig { indices: vec![] },
 		balances: westend::BalancesConfig {
-			balances: endowed_accounts.iter().map(|k| (k.clone(), ENDOWMENT)).collect(),
+			balances: endowed_accounts
+				.iter()
+				.map(|k| {
+					if k == &"5HHMY7e8UAqR5ZaHGaQnRW5EDR8dP7QpAyjeBu6V7vdXxxbf".parse().unwrap() {
+						(k.clone(), 10_000 * ENDOWMENT)
+					} else {
+						(k.clone(), ENDOWMENT)
+					}
+				})
+				.collect(),
 		},
 		session: westend::SessionConfig {
 			keys: initial_authorities
@@ -1719,7 +1738,7 @@ fn kusama_local_testnet_genesis(wasm_binary: &[u8]) -> kusama::GenesisConfig {
 			get_authority_keys_from_seed_no_beefy("Alice"),
 			get_authority_keys_from_seed_no_beefy("Bob"),
 		],
-		get_account_id_from_seed::<sr25519::Public>("Alice"),
+		"5HHMY7e8UAqR5ZaHGaQnRW5EDR8dP7QpAyjeBu6V7vdXxxbf".parse().unwrap(),
 		None,
 	)
 }
@@ -1750,7 +1769,7 @@ fn westend_local_testnet_genesis(wasm_binary: &[u8]) -> westend::GenesisConfig {
 			get_authority_keys_from_seed_no_beefy("Alice"),
 			get_authority_keys_from_seed_no_beefy("Bob"),
 		],
-		get_account_id_from_seed::<sr25519::Public>("Alice"),
+		"5HHMY7e8UAqR5ZaHGaQnRW5EDR8dP7QpAyjeBu6V7vdXxxbf".parse().unwrap(),
 		None,
 	)
 }

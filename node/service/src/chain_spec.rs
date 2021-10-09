@@ -36,6 +36,7 @@ use rococo_runtime as rococo;
 use rococo_runtime::constants::currency::UNITS as ROC;
 use sc_chain_spec::{ChainSpecExtension, ChainType};
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 use sp_core::{sr25519, Pair, Public};
 use sp_runtime::{traits::IdentifyAccount, Perbill};
 use telemetry::TelemetryEndpoints;
@@ -1787,7 +1788,16 @@ pub fn westend_local_testnet_config() -> Result<WestendChainSpec, String> {
 		vec![],
 		None,
 		Some(DEFAULT_PROTOCOL_ID),
-		None,
+		Some(
+			json!({
+				"ss58Format": 2,
+				"tokenSymbol": "KSM",
+				"tokenDecimals": 12,
+			})
+			.as_object()
+			.expect("Network properties are invalid; qed")
+			.to_owned(),
+		),
 		Default::default(),
 	))
 }

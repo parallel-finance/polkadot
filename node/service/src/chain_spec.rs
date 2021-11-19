@@ -370,6 +370,7 @@ fn polkadot_staging_testnet_config_genesis(wasm_binary: &[u8]) -> polkadot::Gene
 		claims: polkadot::ClaimsConfig { claims: vec![], vesting: vec![] },
 		vesting: polkadot::VestingConfig { vesting: vec![] },
 		treasury: Default::default(),
+		hrmp: Default::default(),
 		configuration: polkadot::ConfigurationConfig {
 			config: default_parachains_host_configuration(),
 		},
@@ -555,6 +556,7 @@ fn westend_staging_testnet_config_genesis(wasm_binary: &[u8]) -> westend::Genesi
 		authority_discovery: westend::AuthorityDiscoveryConfig { keys: vec![] },
 		vesting: westend::VestingConfig { vesting: vec![] },
 		sudo: westend::SudoConfig { key: endowed_accounts[0].clone() },
+		hrmp: Default::default(),
 		configuration: westend::ConfigurationConfig {
 			config: default_parachains_host_configuration(),
 		},
@@ -755,6 +757,7 @@ fn kusama_staging_testnet_config_genesis(wasm_binary: &[u8]) -> kusama::GenesisC
 		claims: kusama::ClaimsConfig { claims: vec![], vesting: vec![] },
 		vesting: kusama::VestingConfig { vesting: vec![] },
 		treasury: Default::default(),
+		hrmp: Default::default(),
 		configuration: kusama::ConfigurationConfig {
 			config: default_parachains_host_configuration(),
 		},
@@ -1337,6 +1340,7 @@ pub fn polkadot_testnet_genesis(
 		claims: polkadot::ClaimsConfig { claims: vec![], vesting: vec![] },
 		vesting: polkadot::VestingConfig { vesting: vec![] },
 		treasury: Default::default(),
+		hrmp: Default::default(),
 		configuration: polkadot::ConfigurationConfig {
 			config: default_parachains_host_configuration(),
 		},
@@ -1434,6 +1438,7 @@ pub fn kusama_testnet_genesis(
 		claims: kusama::ClaimsConfig { claims: vec![], vesting: vec![] },
 		vesting: kusama::VestingConfig { vesting: vec![] },
 		treasury: Default::default(),
+		hrmp: Default::default(),
 		configuration: kusama::ConfigurationConfig {
 			config: default_parachains_host_configuration(),
 		},
@@ -1524,6 +1529,7 @@ pub fn westend_testnet_genesis(
 		authority_discovery: westend::AuthorityDiscoveryConfig { keys: vec![] },
 		vesting: westend::VestingConfig { vesting: vec![] },
 		sudo: westend::SudoConfig { key: root_key },
+		hrmp: Default::default(),
 		configuration: westend::ConfigurationConfig {
 			config: default_parachains_host_configuration(),
 		},

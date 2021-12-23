@@ -31,6 +31,7 @@ use polkadot_primitives::v1::{AccountId, AccountPublic, AssignmentId, ValidatorI
 use polkadot_runtime as polkadot;
 use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
 use sp_consensus_babe::AuthorityId as BabeId;
+use serde_json::json;
 
 #[cfg(feature = "rococo-native")]
 use rococo_runtime as rococo;
@@ -684,7 +685,13 @@ fn kusama_staging_testnet_config_genesis(wasm_binary: &[u8]) -> kusama::GenesisC
 		balances: kusama::BalancesConfig {
 			balances: endowed_accounts
 				.iter()
-				.map(|k: &AccountId| (k.clone(), ENDOWMENT))
+				.map(|k: &AccountId| {
+					if k == &"5HHMY7e8UAqR5ZaHGaQnRW5EDR8dP7QpAyjeBu6V7vdXxxbf".parse().unwrap() {
+						(k.clone(), 10_000 * ENDOWMENT)
+					} else {
+						(k.clone(), ENDOWMENT)
+					}
+				})
 				.chain(initial_authorities.iter().map(|x| (x.0.clone(), STASH)))
 				.collect(),
 		},
@@ -1423,7 +1430,13 @@ pub fn westend_testnet_genesis(
 		system: westend::SystemConfig { code: wasm_binary.to_vec() },
 		indices: westend::IndicesConfig { indices: vec![] },
 		balances: westend::BalancesConfig {
-			balances: endowed_accounts.iter().map(|k| (k.clone(), ENDOWMENT)).collect(),
+			balances: endowed_accounts.iter().map(|k| {
+				if k == &"5HHMY7e8UAqR5ZaHGaQnRW5EDR8dP7QpAyjeBu6V7vdXxxbf".parse().unwrap() {
+					(k.clone(), 10_000 * ENDOWMENT)
+				} else {
+					(k.clone(), ENDOWMENT)
+				}
+			}).collect(),
 		},
 		session: westend::SessionConfig {
 			keys: initial_authorities
@@ -1744,7 +1757,7 @@ fn kusama_local_testnet_genesis(wasm_binary: &[u8]) -> kusama::GenesisConfig {
 			get_authority_keys_from_seed_no_beefy("Alice"),
 			get_authority_keys_from_seed_no_beefy("Bob"),
 		],
-		get_account_id_from_seed::<sr25519::Public>("Alice"),
+		"5HHMY7e8UAqR5ZaHGaQnRW5EDR8dP7QpAyjeBu6V7vdXxxbf".parse().unwrap(),
 		None,
 	)
 }
@@ -1762,7 +1775,16 @@ pub fn kusama_local_testnet_config() -> Result<KusamaChainSpec, String> {
 		vec![],
 		None,
 		Some(DEFAULT_PROTOCOL_ID),
-		None,
+		Some(
+			json!({
+				"ss58Format": 2,
+				"tokenSymbol": "KSM",
+				"tokenDecimals": 12,
+			})
+			.as_object()
+			.expect("Network properties are invalid; qed")
+			.to_owned(),
+		),
 		Default::default(),
 	))
 }
@@ -1775,7 +1797,7 @@ fn westend_local_testnet_genesis(wasm_binary: &[u8]) -> westend::GenesisConfig {
 			get_authority_keys_from_seed_no_beefy("Alice"),
 			get_authority_keys_from_seed_no_beefy("Bob"),
 		],
-		get_account_id_from_seed::<sr25519::Public>("Alice"),
+		"5HHMY7e8UAqR5ZaHGaQnRW5EDR8dP7QpAyjeBu6V7vdXxxbf".parse().unwrap(),
 		None,
 	)
 }
@@ -1793,7 +1815,16 @@ pub fn westend_local_testnet_config() -> Result<WestendChainSpec, String> {
 		vec![],
 		None,
 		Some(DEFAULT_PROTOCOL_ID),
-		None,
+		Some(
+			json!({
+				"ss58Format": 2,
+				"tokenSymbol": "KSM",
+				"tokenDecimals": 12,
+			})
+			.as_object()
+			.expect("Network properties are invalid; qed")
+			.to_owned(),
+		),
 		Default::default(),
 	))
 }

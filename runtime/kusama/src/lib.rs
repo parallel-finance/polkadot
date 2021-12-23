@@ -1004,6 +1004,11 @@ impl pallet_society::Config for Runtime {
 	type PalletId = SocietyPalletId;
 }
 
+impl pallet_sudo::Config for Runtime {
+	type Event = Event;
+	type Call = Call;
+}
+
 parameter_types! {
 	pub const MinVestedTransfer: Balance = 100 * CENTS;
 }
@@ -1571,6 +1576,9 @@ construct_runtime! {
 
 		// Pallet for sending XCM.
 		XcmPallet: pallet_xcm::{Pallet, Call, Storage, Event<T>, Origin, Config} = 99,
+		
+		// Sudo.
+		Sudo: pallet_sudo::{Pallet, Call, Storage, Event<T>, Config<T>} = 100,
 	}
 }
 

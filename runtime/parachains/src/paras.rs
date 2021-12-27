@@ -33,10 +33,7 @@ use primitives::v1::{
 };
 use scale_info::TypeInfo;
 use sp_core::RuntimeDebug;
-use sp_runtime::{
-	traits::{BlockNumberProvider, One},
-	DispatchResult, SaturatedConversion,
-};
+use sp_runtime::{traits::One, DispatchResult, SaturatedConversion};
 use sp_std::{prelude::*, result};
 
 #[cfg(feature = "std")]
@@ -956,9 +953,7 @@ impl<T: Config> Pallet<T> {
 
 	/// Schedule a future code upgrade of the given parachain, to be applied after inclusion
 	/// of a block of the same parachain executed in the context of a relay-chain block
-	/// with `relay_chain_number >= expected_at`. If `expected_at <= current_block_number`, we
-	/// will set the go-ahead signal directly and schedule the parachain runtime upgrade for being
-	/// applied after inclusion of a parachain block that was build on the current block or later.
+	/// with number >= `expected_at`
 	///
 	/// If there is already a scheduled code upgrade for the para, this is a no-op.
 	pub(crate) fn schedule_code_upgrade(
@@ -971,23 +966,9 @@ impl<T: Config> Pallet<T> {
 			if up.is_some() {
 				T::DbWeight::get().reads_writes(1, 0)
 			} else {
-				// The block number the upgrade is expected at
-				// (calculated from the point the parachain block was build on).
 				let expected_at = relay_parent_number + cfg.validation_upgrade_delay;
 				let next_possible_upgrade_at =
 					relay_parent_number + cfg.validation_upgrade_frequency;
-
-				// The block number of the current block.
-				let now = frame_system::Pallet::<T>::current_block_number();
-
-				// Number of reads, to be used to calculate the correct weight.
-				let mut reads = 1;
-
-				// If the expected upgrade block is in the past, we need
-				// to move this up to the current block. Aka when a parachain block
-				// will be enacted that was built on this or any descendent block the
-				// runtime upgrade should be enacted.
-				let expected_at = if expected_at <= now { now } else { expected_at };
 
 				*up = Some(expected_at);
 
@@ -997,21 +978,6 @@ impl<T: Config> Pallet<T> {
 						.unwrap_or_else(|idx| idx);
 					upcoming_upgrades.insert(insert_idx, (id, expected_at));
 				});
-
-				// We set the go-ahead signal directly, if the expected upgrade block
-				// is in the past.
-				if expected_at <= now {
-					UpgradeGoAheadSignal::<T>::insert(&id, UpgradeGoAhead::GoAhead);
-				} else {
-					<Self as Store>::UpcomingUpgrades::mutate(|upcoming_upgrades| {
-						let insert_idx = upcoming_upgrades
-							.binary_search_by_key(&expected_at, |&(_, b)| b)
-							.unwrap_or_else(|idx| idx);
-						upcoming_upgrades.insert(insert_idx, (id, expected_at));
-					});
-
-					reads += 1;
-				}
 
 				// From the moment of signalling of the upgrade until the cooldown expires, the
 				// parachain is disallowed to make further upgrades. Therefore set the upgrade
@@ -1023,16 +989,15 @@ impl<T: Config> Pallet<T> {
 						.unwrap_or_else(|idx| idx);
 					upgrade_cooldowns.insert(insert_idx, (id, next_possible_upgrade_at));
 				});
-				reads += 1;
 
 				let new_code_hash = new_code.hash();
 				let expected_at_u32 = expected_at.saturated_into();
 				let log = ConsensusLog::ParaScheduleUpgradeCode(id, new_code_hash, expected_at_u32);
 				<frame_system::Pallet<T>>::deposit_log(log.into());
 
-				let (reads_code_ref, writes) = Self::increase_code_ref(&new_code_hash, &new_code);
+				let (reads, writes) = Self::increase_code_ref(&new_code_hash, &new_code);
 				FutureCodeHash::<T>::insert(&id, new_code_hash);
-				T::DbWeight::get().reads_writes(reads + reads_code_ref, 3 + writes)
+				T::DbWeight::get().reads_writes(2 + reads, 3 + writes)
 			}
 		})
 	}
@@ -1726,100 +1691,6 @@ mod tests {
 					Paras::past_code_meta(&para_id).code_at(expected_at + 4 + 1),
 					Some(UseCodeAt::Current),
 				);
-
-				assert_eq!(
-					<Paras as Store>::PastCodeHash::get(&(para_id, expected_at)),
-					Some(original_code.hash()),
-				);
-				assert!(<Paras as Store>::FutureCodeUpgrades::get(&para_id).is_none());
-				assert!(<Paras as Store>::FutureCodeHash::get(&para_id).is_none());
-				assert!(<Paras as Store>::UpgradeGoAheadSignal::get(&para_id).is_none());
-				assert_eq!(Paras::current_code(&para_id), Some(new_code.clone()));
-			}
-		});
-	}
-
-	/// This mainly checks that local networks with upgrade delays of 1 block or similar work as expected.
-	#[test]
-	fn code_upgrade_applied_with_block_being_enacted_after_upgrade_delay() {
-		let code_retention_period = 10;
-		let validation_upgrade_delay = 1;
-		let validation_upgrade_frequency = 10;
-
-		let original_code = ValidationCode(vec![1, 2, 3]);
-		let paras = vec![(
-			0u32.into(),
-			ParaGenesisArgs {
-				parachain: true,
-				genesis_head: Default::default(),
-				validation_code: original_code.clone(),
-			},
-		)];
-
-		let genesis_config = MockGenesisConfig {
-			paras: GenesisConfig { paras, ..Default::default() },
-			configuration: crate::configuration::GenesisConfig {
-				config: HostConfiguration {
-					code_retention_period,
-					validation_upgrade_delay,
-					validation_upgrade_frequency,
-					..Default::default()
-				},
-				..Default::default()
-			},
-			..Default::default()
-		};
-
-		new_test_ext(genesis_config).execute_with(|| {
-			let para_id = ParaId::from(0);
-			let new_code = ValidationCode(vec![4, 5, 6]);
-
-			run_to_block(2, None);
-			assert_eq!(Paras::current_code(&para_id), Some(original_code.clone()));
-
-			let expected_at = {
-				// this parablock is in the context of block 1.
-				let expected_at = 1 + validation_upgrade_delay;
-				let next_possible_upgrade_at = 1 + validation_upgrade_frequency;
-				Paras::schedule_code_upgrade(
-					para_id,
-					new_code.clone(),
-					1,
-					&Configuration::config(),
-				);
-				Paras::note_new_head(para_id, Default::default(), 1);
-
-				assert!(Paras::past_code_meta(&para_id).most_recent_change().is_none());
-				assert_eq!(<Paras as Store>::FutureCodeUpgrades::get(&para_id), Some(expected_at));
-				assert_eq!(<Paras as Store>::FutureCodeHash::get(&para_id), Some(new_code.hash()));
-				assert_eq!(
-					<Paras as Store>::UpgradeCooldowns::get(),
-					vec![(para_id, next_possible_upgrade_at)]
-				);
-				// As the parachain block was enacted after the expected block the upgrade should be applied,
-				// the go-ahaed signal should be set directly.
-				assert_eq!(<Paras as Store>::UpcomingUpgrades::get(), vec![]);
-				assert_eq!(
-					<Paras as Store>::UpgradeGoAheadSignal::get(&para_id),
-					Some(UpgradeGoAhead::GoAhead),
-				);
-				assert_eq!(Paras::current_code(&para_id), Some(original_code.clone()));
-
-				expected_at
-			};
-
-			run_to_block(expected_at + 1, None);
-
-			// the candidate is in the context of the first descendant of `expected_at`, and triggers
-			// the upgrade.
-			{
-				// The signal should be set to go-ahead, but will be reset by enacting the next block.
-				assert_eq!(
-					<Paras as Store>::UpgradeGoAheadSignal::get(&para_id),
-					Some(UpgradeGoAhead::GoAhead),
-				);
-
-				Paras::note_new_head(para_id, Default::default(), expected_at);
 
 				assert_eq!(
 					<Paras as Store>::PastCodeHash::get(&(para_id, expected_at)),

@@ -172,7 +172,7 @@ fn default_parachains_host_configuration(
 
 	polkadot_runtime_parachains::configuration::HostConfiguration {
 		validation_upgrade_frequency: 1u32,
-		validation_upgrade_delay: 3,
+		validation_upgrade_delay: 1,
 		code_retention_period: 1200,
 		max_code_size: MAX_CODE_SIZE,
 		max_pov_size: MAX_POV_SIZE,

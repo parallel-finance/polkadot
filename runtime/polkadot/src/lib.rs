@@ -22,9 +22,10 @@
 
 use pallet_transaction_payment::CurrencyAdapter;
 use runtime_common::{
-	auctions, claims, crowdloan, impls::DealWithFees, paras_registrar, prod_or_fast, slots,
-	BlockHashCount, BlockLength, BlockWeights, CurrencyToVote, OffchainSolutionLengthLimit,
-	OffchainSolutionWeightLimit, RocksDbWeight, SlowAdjustingFeeUpdate,
+	auctions, claims, crowdloan, impls::DealWithFees, paras_registrar, paras_sudo_wrapper,
+	prod_or_fast, slots, BlockHashCount, BlockLength, BlockWeights, CurrencyToVote,
+	OffchainSolutionLengthLimit, OffchainSolutionWeightLimit, RocksDbWeight,
+	SlowAdjustingFeeUpdate,
 };
 
 use runtime_parachains::{
@@ -180,10 +181,12 @@ impl Contains<Call> for BaseFilter {
 			Call::Hrmp(_) |
 			Call::Slots(_) |
 			Call::Registrar(_) |
+			Call::ParasSudoWrapper(_) |
 			Call::Auctions(_) |
 			Call::Crowdloan(_) |
 			Call::BagsList(_) |
-			Call::XcmPallet(_) => true,
+			Call::XcmPallet(_) |
+			Call::Sudo(_) => true,
 			// All pallets are allowed, but exhaustive match is defensive
 			// in the case of adding new pallets.
 		}
@@ -536,10 +539,10 @@ pallet_staking_reward_curve::build! {
 
 parameter_types! {
 	// Six sessions in an era (24 hours).
-	pub const SessionsPerEra: SessionIndex = 6;
+	pub const SessionsPerEra: SessionIndex = 1;
 	// 28 eras for unbonding (28 days).
-	pub const BondingDuration: sp_staking::EraIndex = 28;
-	pub const SlashDeferDuration: sp_staking::EraIndex = 27;
+	pub const BondingDuration: sp_staking::EraIndex = 3;
+	pub const SlashDeferDuration: sp_staking::EraIndex = 2;
 	pub const RewardCurve: &'static PiecewiseLinear<'static> = &REWARD_CURVE;
 	pub const MaxNominatorRewardedPerValidator: u32 = 256;
 	pub const OffendingValidatorsThreshold: Perbill = Perbill::from_percent(17);
@@ -972,6 +975,11 @@ impl claims::Config for Runtime {
 	type WeightInfo = weights::runtime_common_claims::WeightInfo<Runtime>;
 }
 
+impl pallet_sudo::Config for Runtime {
+	type Event = Event;
+	type Call = Call;
+}
+
 parameter_types! {
 	pub const MinVestedTransfer: Balance = 1 * DOLLARS;
 }
@@ -1253,6 +1261,8 @@ impl paras_registrar::Config for Runtime {
 	type WeightInfo = weights::runtime_common_paras_registrar::WeightInfo<Runtime>;
 }
 
+impl paras_sudo_wrapper::Config for Runtime {}
+
 parameter_types! {
 	// 12 weeks = 3 months per lease period -> 8 lease periods ~ 2 years
 	pub LeasePeriod: BlockNumber = prod_or_fast!(12 * WEEKS, 12 * WEEKS, "DOT_LEASE_PERIOD");
@@ -1261,7 +1271,7 @@ parameter_types! {
 	// Difference is 568 days.
 	// We want a lease period to start on the target onboarding date.
 	// 568 % (12 * 7) = 64 day offset
-	pub LeaseOffset: BlockNumber = prod_or_fast!(64 * DAYS, 0, "DOT_LEASE_OFFSET");
+	//pub LeaseOffset: BlockNumber = prod_or_fast!(64 * DAYS, 0, "DOT_LEASE_OFFSET");
 }
 
 impl slots::Config for Runtime {
@@ -1269,7 +1279,7 @@ impl slots::Config for Runtime {
 	type Currency = Balances;
 	type Registrar = Registrar;
 	type LeasePeriod = LeasePeriod;
-	type LeaseOffset = LeaseOffset;
+	type LeaseOffset = ();
 	type ForceOrigin = MoreThanHalfCouncil;
 	type WeightInfo = weights::runtime_common_slots::WeightInfo<Runtime>;
 }
@@ -1301,7 +1311,7 @@ impl crowdloan::Config for Runtime {
 parameter_types! {
 	// The average auction is 7 days long, so this will be 70% for ending period.
 	// 5 Days = 72000 Blocks @ 6 sec per block
-	pub const EndingPeriod: BlockNumber = 5 * DAYS;
+	pub const EndingPeriod: BlockNumber = 5 * MINUTES;
 	// ~ 1000 samples per day -> ~ 20 blocks per sample -> 2 minute samples
 	pub const SampleLength: BlockNumber = 2 * MINUTES;
 }
@@ -1409,9 +1419,13 @@ construct_runtime! {
 		Slots: slots::{Pallet, Call, Storage, Event<T>} = 71,
 		Auctions: auctions::{Pallet, Call, Storage, Event<T>} = 72,
 		Crowdloan: crowdloan::{Pallet, Call, Storage, Event<T>} = 73,
+		ParasSudoWrapper: paras_sudo_wrapper::{Pallet, Call} = 74,
 
 		// Pallet for sending XCM.
 		XcmPallet: pallet_xcm::{Pallet, Call, Storage, Event<T>, Origin, Config} = 99,
+
+		// Sudo.
+		Sudo: pallet_sudo::{Pallet, Call, Storage, Event<T>, Config<T>} = 100,
 	}
 }
 

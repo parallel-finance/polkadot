@@ -180,6 +180,7 @@ impl Contains<Call> for BaseFilter {
 			Call::Hrmp(_) |
 			Call::Slots(_) |
 			Call::Registrar(_) |
+			Call::ParasSudoWrapper(_) |
 			Call::Auctions(_) |
 			Call::Crowdloan(_) |
 			Call::BagsList(_) |

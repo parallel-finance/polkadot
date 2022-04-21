@@ -58,6 +58,7 @@ pallet-gilt                                = { git = "https://github.com/parityt
 pallet-grandpa                             = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.19" }
 pallet-identity                            = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.19" }
 pallet-im-online                           = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.19" }
+pallet-sudo                                = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.19" }
 pallet-indices                             = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.19" }
 pallet-membership                          = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.19" }
 pallet-mmr-primitives                      = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.19" }

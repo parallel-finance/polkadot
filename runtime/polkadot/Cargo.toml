@@ -67,6 +67,7 @@ pallet-scheduler                           = { git = "https://github.com/parityt
 pallet-session                             = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.19" }
 pallet-staking                             = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.19" }
 pallet-staking-reward-curve                = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.19" }
+pallet-sudo                                = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.19" }
 pallet-timestamp                           = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.19" }
 pallet-tips                                = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.19" }
 pallet-transaction-payment                 = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.19" }

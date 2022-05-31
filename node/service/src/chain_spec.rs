@@ -1305,6 +1305,7 @@ fn testnet_accounts() -> Vec<AccountId> {
 		get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
 		get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
 		get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
+		"5HHMY7e8UAqR5ZaHGaQnRW5EDR8dP7QpAyjeBu6V7vdXxxbf".parse().unwrap(),
 	]
 }
 
@@ -1322,7 +1323,7 @@ pub fn polkadot_testnet_genesis(
 		AssignmentId,
 		AuthorityDiscoveryId,
 	)>,
-	_root_key: AccountId,
+	root_key: AccountId,
 	endowed_accounts: Option<Vec<AccountId>>,
 ) -> polkadot::GenesisConfig {
 	let endowed_accounts: Vec<AccountId> = endowed_accounts.unwrap_or_else(testnet_accounts);
@@ -1391,9 +1392,7 @@ pub fn polkadot_testnet_genesis(
 		},
 		paras: Default::default(),
 		xcm_pallet: Default::default(),
-		sudo: polkadot::SudoConfig {
-			key: Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
-		},
+		sudo: polkadot::SudoConfig { key: Some(root_key) },
 	}
 }
 
@@ -1411,7 +1410,7 @@ pub fn kusama_testnet_genesis(
 		AssignmentId,
 		AuthorityDiscoveryId,
 	)>,
-	_root_key: AccountId,
+	root_key: AccountId,
 	endowed_accounts: Option<Vec<AccountId>>,
 ) -> kusama::GenesisConfig {
 	let endowed_accounts: Vec<AccountId> = endowed_accounts.unwrap_or_else(testnet_accounts);
@@ -1482,9 +1481,7 @@ pub fn kusama_testnet_genesis(
 		paras: Default::default(),
 		xcm_pallet: Default::default(),
 		nomination_pools: Default::default(),
-		sudo: kusama::SudoConfig {
-			key: Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
-		},
+		sudo: kusama::SudoConfig { key: Some(root_key) },
 	}
 }
 
@@ -1834,8 +1831,10 @@ fn polkadot_local_testnet_genesis(wasm_binary: &[u8]) -> polkadot::GenesisConfig
 		vec![
 			get_authority_keys_from_seed_no_beefy("Alice"),
 			get_authority_keys_from_seed_no_beefy("Bob"),
+			get_authority_keys_from_seed_no_beefy("Charlie"),
+			get_authority_keys_from_seed_no_beefy("Dave"),
 		],
-		get_account_id_from_seed::<sr25519::Public>("Alice"),
+		"5HHMY7e8UAqR5ZaHGaQnRW5EDR8dP7QpAyjeBu6V7vdXxxbf".parse().unwrap(),
 		None,
 	)
 }
@@ -1866,8 +1865,10 @@ fn kusama_local_testnet_genesis(wasm_binary: &[u8]) -> kusama::GenesisConfig {
 		vec![
 			get_authority_keys_from_seed_no_beefy("Alice"),
 			get_authority_keys_from_seed_no_beefy("Bob"),
+			get_authority_keys_from_seed_no_beefy("Charlie"),
+			get_authority_keys_from_seed_no_beefy("Dave"),
 		],
-		get_account_id_from_seed::<sr25519::Public>("Alice"),
+		"5HHMY7e8UAqR5ZaHGaQnRW5EDR8dP7QpAyjeBu6V7vdXxxbf".parse().unwrap(),
 		None,
 	)
 }

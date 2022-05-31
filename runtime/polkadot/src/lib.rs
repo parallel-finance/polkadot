@@ -550,10 +550,10 @@ pallet_staking_reward_curve::build! {
 
 parameter_types! {
 	// Six sessions in an era (24 hours).
-	pub const SessionsPerEra: SessionIndex = 6;
+	pub const SessionsPerEra: SessionIndex = prod_or_fast!(6,1);
 	// 28 eras for unbonding (28 days).
-	pub const BondingDuration: sp_staking::EraIndex = 28;
-	pub const SlashDeferDuration: sp_staking::EraIndex = 27;
+	pub const BondingDuration: sp_staking::EraIndex = prod_or_fast!(28,3);
+	pub const SlashDeferDuration: sp_staking::EraIndex = prod_or_fast!(27,2);
 	pub const RewardCurve: &'static PiecewiseLinear<'static> = &REWARD_CURVE;
 	pub const MaxNominatorRewardedPerValidator: u32 = 256;
 	pub const OffendingValidatorsThreshold: Perbill = Perbill::from_percent(17);
@@ -1297,7 +1297,7 @@ impl paras_registrar::Config for Runtime {
 
 parameter_types! {
 	// 12 weeks = 3 months per lease period -> 8 lease periods ~ 2 years
-	pub LeasePeriod: BlockNumber = prod_or_fast!(12 * WEEKS, 12 * WEEKS, "DOT_LEASE_PERIOD");
+	pub LeasePeriod: BlockNumber = prod_or_fast!(12 * WEEKS, 1 * HOURS, "DOT_LEASE_PERIOD");
 	// Polkadot Genesis was on May 26, 2020.
 	// Target Parachain Onboarding Date: Dec 15, 2021.
 	// Difference is 568 days.
@@ -1343,7 +1343,7 @@ impl crowdloan::Config for Runtime {
 parameter_types! {
 	// The average auction is 7 days long, so this will be 70% for ending period.
 	// 5 Days = 72000 Blocks @ 6 sec per block
-	pub const EndingPeriod: BlockNumber = 5 * DAYS;
+	pub const EndingPeriod: BlockNumber = prod_or_fast!(5 * DAYS,2 * MINUTES);
 	// ~ 1000 samples per day -> ~ 20 blocks per sample -> 2 minute samples
 	pub const SampleLength: BlockNumber = 2 * MINUTES;
 }

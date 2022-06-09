@@ -1091,13 +1091,27 @@ fn rococo_staging_testnet_config_genesis(wasm_binary: &[u8]) -> rococo_runtime::
 	}
 }
 
+/// Returns the properties for the [`KusamaChainSpec`].
+pub fn kusama_chain_spec_properties() -> serde_json::map::Map<String, serde_json::Value> {
+	serde_json::json!({
+		"ss58Format": 2u8,
+		"tokenSymbol": "KSM",
+		"tokenDecimals": 12u8,
+	})
+	.as_object()
+	.expect("Network properties are invalid; qed")
+	.clone()
+}
+
 /// Returns the properties for the [`PolkadotChainSpec`].
 pub fn polkadot_chain_spec_properties() -> serde_json::map::Map<String, serde_json::Value> {
 	serde_json::json!({
+		"ss58Format": 0u8,
+		"tokenSymbol": "DOT",
 		"tokenDecimals": 10,
 	})
 	.as_object()
-	.expect("Map given; qed")
+	.expect("Network properties are invalid; qed")
 	.clone()
 }
 
@@ -1142,7 +1156,7 @@ pub fn kusama_staging_testnet_config() -> Result<KusamaChainSpec, String> {
 		),
 		Some(DEFAULT_PROTOCOL_ID),
 		None,
-		None,
+		Some(kusama_chain_spec_properties()),
 		Default::default(),
 	))
 }
@@ -1730,7 +1744,7 @@ pub fn kusama_development_config() -> Result<KusamaChainSpec, String> {
 		None,
 		Some(DEFAULT_PROTOCOL_ID),
 		None,
-		None,
+		Some(kusama_chain_spec_properties()),
 		Default::default(),
 	))
 }
@@ -1887,7 +1901,7 @@ pub fn kusama_local_testnet_config() -> Result<KusamaChainSpec, String> {
 		None,
 		Some(DEFAULT_PROTOCOL_ID),
 		None,
-		None,
+		Some(kusama_chain_spec_properties()),
 		Default::default(),
 	))
 }

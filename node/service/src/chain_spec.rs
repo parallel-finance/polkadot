@@ -387,6 +387,9 @@ fn polkadot_staging_testnet_config_genesis(wasm_binary: &[u8]) -> polkadot::Gene
 		paras: Default::default(),
 		xcm_pallet: Default::default(),
 		nomination_pools: Default::default(),
+		sudo: polkadot::SudoConfig {
+			key: Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
+		},
 	}
 }
 
@@ -769,6 +772,9 @@ fn kusama_staging_testnet_config_genesis(wasm_binary: &[u8]) -> kusama::GenesisC
 		paras: Default::default(),
 		xcm_pallet: Default::default(),
 		nomination_pools: Default::default(),
+		sudo: kusama::SudoConfig {
+			key: Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
+		},
 	}
 }
 
@@ -1284,6 +1290,7 @@ fn testnet_accounts() -> Vec<AccountId> {
 		get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
 		get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
 		get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
+		"5HHMY7e8UAqR5ZaHGaQnRW5EDR8dP7QpAyjeBu6V7vdXxxbf".parse().unwrap(),
 	]
 }
 
@@ -1301,7 +1308,7 @@ pub fn polkadot_testnet_genesis(
 		AssignmentId,
 		AuthorityDiscoveryId,
 	)>,
-	_root_key: AccountId,
+	root_key: AccountId,
 	endowed_accounts: Option<Vec<AccountId>>,
 ) -> polkadot::GenesisConfig {
 	let endowed_accounts: Vec<AccountId> = endowed_accounts.unwrap_or_else(testnet_accounts);
@@ -1313,7 +1320,16 @@ pub fn polkadot_testnet_genesis(
 		system: polkadot::SystemConfig { code: wasm_binary.to_vec() },
 		indices: polkadot::IndicesConfig { indices: vec![] },
 		balances: polkadot::BalancesConfig {
-			balances: endowed_accounts.iter().map(|k| (k.clone(), ENDOWMENT)).collect(),
+			balances: endowed_accounts
+				.iter()
+				.map(|k| {
+					if k == &"5HHMY7e8UAqR5ZaHGaQnRW5EDR8dP7QpAyjeBu6V7vdXxxbf".parse().unwrap() {
+						(k.clone(), 10_000 * ENDOWMENT)
+					} else {
+						(k.clone(), ENDOWMENT)
+					}
+				})
+				.collect(),
 		},
 		session: polkadot::SessionConfig {
 			keys: initial_authorities
@@ -1371,6 +1387,9 @@ pub fn polkadot_testnet_genesis(
 		paras: Default::default(),
 		xcm_pallet: Default::default(),
 		nomination_pools: Default::default(),
+		sudo: polkadot::SudoConfig {
+			key: Some(root_key),
+		},
 	}
 }
 
@@ -1388,7 +1407,7 @@ pub fn kusama_testnet_genesis(
 		AssignmentId,
 		AuthorityDiscoveryId,
 	)>,
-	_root_key: AccountId,
+	root_key: AccountId,
 	endowed_accounts: Option<Vec<AccountId>>,
 ) -> kusama::GenesisConfig {
 	let endowed_accounts: Vec<AccountId> = endowed_accounts.unwrap_or_else(testnet_accounts);
@@ -1459,6 +1478,9 @@ pub fn kusama_testnet_genesis(
 		paras: Default::default(),
 		xcm_pallet: Default::default(),
 		nomination_pools: Default::default(),
+		sudo: kusama::SudoConfig {
+			key: Some(root_key),
+		},
 	}
 }
 
@@ -1792,8 +1814,10 @@ fn polkadot_local_testnet_genesis(wasm_binary: &[u8]) -> polkadot::GenesisConfig
 		vec![
 			get_authority_keys_from_seed_no_beefy("Alice"),
 			get_authority_keys_from_seed_no_beefy("Bob"),
+			get_authority_keys_from_seed_no_beefy("Charlie"),
+			get_authority_keys_from_seed_no_beefy("Dave"),
 		],
-		get_account_id_from_seed::<sr25519::Public>("Alice"),
+		"5HHMY7e8UAqR5ZaHGaQnRW5EDR8dP7QpAyjeBu6V7vdXxxbf".parse().unwrap(),
 		None,
 	)
 }
@@ -1824,8 +1848,10 @@ fn kusama_local_testnet_genesis(wasm_binary: &[u8]) -> kusama::GenesisConfig {
 		vec![
 			get_authority_keys_from_seed_no_beefy("Alice"),
 			get_authority_keys_from_seed_no_beefy("Bob"),
+			get_authority_keys_from_seed_no_beefy("Charlie"),
+			get_authority_keys_from_seed_no_beefy("Dave"),
 		],
-		get_account_id_from_seed::<sr25519::Public>("Alice"),
+		"5HHMY7e8UAqR5ZaHGaQnRW5EDR8dP7QpAyjeBu6V7vdXxxbf".parse().unwrap(),
 		None,
 	)
 }
@@ -1856,8 +1882,10 @@ fn westend_local_testnet_genesis(wasm_binary: &[u8]) -> westend::GenesisConfig {
 		vec![
 			get_authority_keys_from_seed_no_beefy("Alice"),
 			get_authority_keys_from_seed_no_beefy("Bob"),
+			get_authority_keys_from_seed_no_beefy("Charlie"),
+			get_authority_keys_from_seed_no_beefy("Dave"),
 		],
-		get_account_id_from_seed::<sr25519::Public>("Alice"),
+		"5HHMY7e8UAqR5ZaHGaQnRW5EDR8dP7QpAyjeBu6V7vdXxxbf".parse().unwrap(),
 		None,
 	)
 }
@@ -1885,8 +1913,13 @@ pub fn westend_local_testnet_config() -> Result<WestendChainSpec, String> {
 fn rococo_local_testnet_genesis(wasm_binary: &[u8]) -> rococo_runtime::GenesisConfig {
 	rococo_testnet_genesis(
 		wasm_binary,
-		vec![get_authority_keys_from_seed("Alice"), get_authority_keys_from_seed("Bob")],
-		get_account_id_from_seed::<sr25519::Public>("Alice"),
+		vec![
+			get_authority_keys_from_seed("Alice"),
+			get_authority_keys_from_seed("Bob"),
+			get_authority_keys_from_seed("Charlie"),
+			get_authority_keys_from_seed("Dave"),
+		],
+		"5HHMY7e8UAqR5ZaHGaQnRW5EDR8dP7QpAyjeBu6V7vdXxxbf".parse().unwrap(),
 		None,
 	)
 }

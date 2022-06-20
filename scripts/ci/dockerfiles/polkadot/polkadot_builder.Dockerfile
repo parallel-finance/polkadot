@@ -4,7 +4,9 @@ FROM docker.io/paritytech/ci-linux:production as builder
 WORKDIR /polkadot
 COPY . /polkadot
 
-RUN cargo build --locked --release
+RUN rustup default nightly
+RUN rustup target add wasm32-unknown-unknown
+RUN cargo build --locked --release --features fast-runtime
 
 # This is the 2nd stage: a very small image where we copy the Polkadot binary."
 FROM docker.io/library/ubuntu:20.04

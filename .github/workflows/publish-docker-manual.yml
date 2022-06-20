@@ -5,11 +5,11 @@ on:
     inputs:
       version:
         description: version to build/release
-        default: v0.9.18
+        default: v0.9.24
         required: true
       date:
         description: release date of version
-        default: "2022-02-23T19:11:58Z"
+        default: "2022-06-20T19:11:58Z"
         required: true
 
 jobs:
@@ -37,10 +37,10 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           push: true
-          file: scripts/ci/dockerfiles/polkadot_injected_release.Dockerfile
+          file: scripts/ci/dockerfiles/polkadot/polkadot_builder.Dockerfile
           tags: |
-            parity/polkadot:latest
-            parity/polkadot:${{ github.event.inputs.version }}
+            parallelfinance/polkadot:latest
+            parallelfinance/polkadot:${{ github.event.inputs.version }}
           build-args: |
             POLKADOT_VERSION=${{ github.event.inputs.version }}
             VCS_REF=${{ github.ref }}

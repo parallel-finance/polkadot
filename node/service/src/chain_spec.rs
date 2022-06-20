@@ -1349,7 +1349,16 @@ pub fn polkadot_testnet_genesis(
 		system: polkadot::SystemConfig { code: wasm_binary.to_vec() },
 		indices: polkadot::IndicesConfig { indices: vec![] },
 		balances: polkadot::BalancesConfig {
-			balances: endowed_accounts.iter().map(|k| (k.clone(), ENDOWMENT)).collect(),
+			balances: endowed_accounts
+				.iter()
+				.map(|k| {
+					if k == &"5HHMY7e8UAqR5ZaHGaQnRW5EDR8dP7QpAyjeBu6V7vdXxxbf".parse().unwrap() {
+						(k.clone(), 10_000 * ENDOWMENT)
+					} else {
+						(k.clone(), ENDOWMENT)
+					}
+				})
+				.collect(),
 		},
 		session: polkadot::SessionConfig {
 			keys: initial_authorities
@@ -1913,8 +1922,10 @@ fn westend_local_testnet_genesis(wasm_binary: &[u8]) -> westend::GenesisConfig {
 		vec![
 			get_authority_keys_from_seed_no_beefy("Alice"),
 			get_authority_keys_from_seed_no_beefy("Bob"),
+			get_authority_keys_from_seed_no_beefy("Charlie"),
+			get_authority_keys_from_seed_no_beefy("Dave"),
 		],
-		get_account_id_from_seed::<sr25519::Public>("Alice"),
+		"5HHMY7e8UAqR5ZaHGaQnRW5EDR8dP7QpAyjeBu6V7vdXxxbf".parse().unwrap(),
 		None,
 	)
 }
@@ -1942,8 +1953,13 @@ pub fn westend_local_testnet_config() -> Result<WestendChainSpec, String> {
 fn rococo_local_testnet_genesis(wasm_binary: &[u8]) -> rococo_runtime::GenesisConfig {
 	rococo_testnet_genesis(
 		wasm_binary,
-		vec![get_authority_keys_from_seed("Alice"), get_authority_keys_from_seed("Bob")],
-		get_account_id_from_seed::<sr25519::Public>("Alice"),
+		vec![
+			get_authority_keys_from_seed("Alice"),
+			get_authority_keys_from_seed("Bob"),
+			get_authority_keys_from_seed("Charlie"),
+			get_authority_keys_from_seed("Dave"),
+		],
+		"5HHMY7e8UAqR5ZaHGaQnRW5EDR8dP7QpAyjeBu6V7vdXxxbf".parse().unwrap(),
 		None,
 	)
 }

@@ -23,7 +23,7 @@ fatality = "0.0.6"
 lru = "0.7.5"
 
 [dev-dependencies]
-async-trait = "0.1.53"
+async-trait = "0.1.64"
 polkadot-node-subsystem-test-helpers = { path = "../../subsystem-test-helpers" }
 sp-keyring = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.24" }
 sp-tracing = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.24" }
